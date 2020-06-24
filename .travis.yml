@@ -28,6 +28,6 @@ before_install:
 deploy:
   provider: script
   skip_cleanup: true
-  script: rsync -r --delete-after --quiet $TRAVIS_BUILD_DIR/dist ${SFTP_USER}@${SFTP_IP}:apps/sub-apps/tumcalc/dist
+  script: ls $TRAVIS_BUILD_DIR && rsync -r --delete-after --quiet $TRAVIS_BUILD_DIR ${SFTP_USER}@${SFTP_IP}:apps/sub-apps/tumcalc/dist
   on:
     branch: master
