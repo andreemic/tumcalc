@@ -24,22 +24,20 @@ module.exports = function (config) {
     port: 9876,
     colors: true,
     logLevel: config.LOG_INFO,
-    autoWatch: false,
+    autoWatch: true,
     browsers: ['Chrome'],
 
     customLaunchers: {
       Chrome_travis_ci: {
-        base: 'Chrome',
+        base: 'ChromeHeadless',
         flags: ['--no-sandbox']
       }
     },
-    singleRun: true,
     restartOnFileChange: true
   };
 
-  if (process.env.TRAVIS) {
     config.browsers = ['Chrome_travis_ci'];
-  }
+    config.singleRun = true;
 
   config.set(configuration);
 };
