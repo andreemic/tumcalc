@@ -25,9 +25,9 @@ before_install:
   - echo -e "Host $SFTP_IP\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
   - echo -e "UserKnownHostFile $SFTP_IP\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
   - ssh-add ./deploy_key
-   - export DISPLAY=:99.0
-   - sh -e /etc/init.d/xvfb start
-   - sleep 3 # give xvfb some time to start
+  - export DISPLAY=:99.0
+  - sh -e /etc/init.d/xvfb start
+  - sleep 3 # give xvfb some time to start
 
 deploy:
   provider: script
