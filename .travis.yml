@@ -1,29 +1,29 @@
 dist: trusty
 language: node_js
 node_js:
-- 12
+  - 12
 env:
   global:
     secure: F57oRPrF5PnjDAl9aCN/d4LY2s4NE+jpSSiYels3G4yen94QvMIT/PlQpIYPrWTy5ihhyMGzU2leuuhQKGfr0bnBx8umGiN5ZFjznZKJu3hpdi7kXqb68rmX+UkjnOIT1KV9liM3iMnusxRZ+BnE0CNbf04bbdceRv3tht2yHPb+cTTr0ZqNladzRDbHWDdusl0NW8kV0f6juodtyjSOKTN+TeJMzPMX7f3RWoDpOJ1BWuqcmePG+mnnO8zGZTMvVbjNhhdZQKHZ5LpXSIDZDiMaHkPEwlGJipOyhdL+mBlRRlXyvvwBI1WWtqQ9Asx8T5mSU5WvmOv1jBYoTizCcmbSbyv1IZgsQ6Fkce7ptg6Kn5h+0ShAHqxse2lLx7xdShXQ9WBrnMgzmC1YI8G8zct2UYZYxBZdkEpzpCqSrZFY7y13KChknVdLHDmnbjcvsDOWGjhOLQvRzFKdtwG5+lQt9Ol36mWK6Xw81IFf7h5Qg15RXhrmxbisV701TrCc5ILIAGXVleqG36UpqnGdaQYEWgg7kRQ/43ffUfjirI70grsK4WcXSQBY1a/Al052zw5vCmtDBBqbFX67TJoqNIf7PPeosXkMJGbLGzFBGsDDlmGgnt+tHONoyzxDy+Tqc0iXuM4VLIWo08/kPyuFeJ0rY51BoXSXf8LwmKKPdmA=
-  - SFTP_IP=94.130.211.59
+    - 'SFTP_IP=94.130.211.59'
 addons:
   chrome: stable
 cache:
   directories:
-  - "./node_modules"
+    - "./node_modules"
 install:
-- npm install
+  - npm install
 script:
-- npm run test --watch=false --no-progress --browsers=ChromeHeadlessNoSandbox
-- npm build --outputPath=$TRAVIS_BUILD_DIR/dist  
+  - npm run test --watch=false --no-progress --browsers=ChromeHeadlessNoSandbox
+  - npm build --outputPath=$TRAVIS_BUILD_DIR/dist  
 before_install:
-- openssl aes-256-cbc -K $encrypted_dfdcfd5172af_key -iv $encrypted_dfdcfd5172af_iv
-  -in deploy_key.enc -out ./deploy_key -d
-- eval "$(ssh-agent -s)"
-- chmod 600 ./deploy_key
-- echo -e "Host $SFTP_IP\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
-- echo -e "UserKnownHostFile $SFTP_IP\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
-- ssh-add ./deploy_key
+  - openssl aes-256-cbc -K $encrypted_dfdcfd5172af_key -iv $encrypted_dfdcfd5172af_iv 
+    -in deploy_key.enc -out ./deploy_key -d
+  - eval "$(ssh-agent -s)"
+  - chmod 600 ./deploy_key
+  - echo -e "Host $SFTP_IP\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
+  - echo -e "UserKnownHostFile $SFTP_IP\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
+  - ssh-add ./deploy_key
 
 deploy:
   provider: script
