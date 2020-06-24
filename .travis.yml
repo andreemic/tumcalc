@@ -14,8 +14,8 @@ cache:
 install:
 - npm install
 script:
-- npm run test -- --watch=false --no-progress --browsers=ChromeHeadlessNoSandbox
-- npm build 
+- npm run test --watch=false --no-progress --browsers=ChromeHeadlessNoSandbox
+- npm build --outputPath=$TRAVIS_BUILD_DIR/dist  
 before_install:
 - openssl aes-256-cbc -K $encrypted_dfdcfd5172af_key -iv $encrypted_dfdcfd5172af_iv
   -in deploy_key.enc -out ./deploy_key -d
@@ -28,6 +28,6 @@ before_install:
 deploy:
   provider: script
   skip_cleanup: true
-  script: rsync -r --delete-after --quiet -avz $TRAVIS_BUILD_DIR/ ${SFTP_USER}@${SFTP_IP}:apps/sub-apps/tumcalc/dist
+  script: rsync -r --delete-after -avz $TRAVIS_BUILD_DIR/dist ${SFTP_USER}@${SFTP_IP}:apps/sub-apps/tumcalc/dist
   on:
     branch: master
