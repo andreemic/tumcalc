@@ -35,4 +35,8 @@ module.exports = function (config) {
     singleRun: false,
     restartOnFileChange: true
   });
+  
+  if(process.env.TRAVIS){
+    configuration.browsers = ['Chrome_travis_ci'];
+  }
 };
