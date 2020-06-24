@@ -26,18 +26,14 @@ module.exports = function (config) {
     logLevel: config.LOG_INFO,
     autoWatch: true,
     browsers: ['Chrome'],
-
     customLaunchers: {
-      Chrome_travis_ci: {
+      ChromeHeadlessNoSandbox: {
         base: 'ChromeHeadless',
         flags: ['--no-sandbox']
       }
     },
     restartOnFileChange: true
   };
-
-    config.browsers = ['Chrome_travis_ci'];
-    config.singleRun = true;
 
   config.set(configuration);
 };
