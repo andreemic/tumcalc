@@ -15,7 +15,7 @@ cache:
 install:
   - npm install
 script:
-  - npm run test --watch=false --no-progress --browsers=ChromeHeadlessNoSandbox
+  - npm run test -- --watch=false --no-progress --browsers=ChromeHeadlessNoSandbox
   - npm run build --outputPath=$TRAVIS_BUILD_DIR/dist  
 before_install:
   - openssl aes-256-cbc -K $encrypted_dfdcfd5172af_key -iv $encrypted_dfdcfd5172af_iv 
@@ -25,9 +25,6 @@ before_install:
   - echo -e "Host $SFTP_IP\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
   - echo -e "UserKnownHostFile $SFTP_IP\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
   - ssh-add ./deploy_key
-  - export DISPLAY=:99.0
-  - sh -e /etc/init.d/xvfb start
-  - sleep 3 # give xvfb some time to start
 
 deploy:
   provider: script
