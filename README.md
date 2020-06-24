@@ -1,3 +1,3 @@
 # Tumcalc
 
-TUM Eignungsfestellungsverfahren Punkte Rechner in Angular.
+TUM Eignungsfestellungsverfahren Punkte Rechner in Angular und Sass.
