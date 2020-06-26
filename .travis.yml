@@ -22,7 +22,7 @@ before_install:
     -in deploy_key.enc -out ./deploy_key -d
   - eval "$(ssh-agent -s)"
   - chmod 600 ./deploy_key
-  - echo -e "Host ${$SFTP_IP}\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
+  - echo -e "Host ${SFTP_IP}\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
   - echo -e "UserKnownHostFile ${SFTP_IP}\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
   - ssh-add ./deploy_key
 
