@@ -22,12 +22,13 @@ before_install:
     -in deploy_key.enc -out ./deploy_key -d
   - eval "$(ssh-agent -s)"
   - chmod 600 ./deploy_key
-  - echo -e "Host $SFTP_IP\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
-  - echo -e "UserKnownHostFile $SFTP_IP\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
+  - echo -e "Host ${$SFTP_IP}\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
+  - echo -e "UserKnownHostFile ${SFTP_IP}\n\tStrictHostKeyChecking no\n" >> ~/.ssh/config
   - ssh-add ./deploy_key
 
 deploy:
   provider: script
+  skip_cleanup: true
   cleanup: false
   script: rsync -r --delete-after -avz $TRAVIS_BUILD_DIR/dist ${SFTP_USER}@${SFTP_IP}:apps/sub-apps/tumcalc/dist
   on:
