@@ -3,7 +3,7 @@ import { NgModule } from '@angular/core';
 
 import { AppComponent } from './app.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgVarDirective } from './ng-var.directive';
 
 @NgModule({
@@ -14,6 +14,7 @@ import { NgVarDirective } from './ng-var.directive';
   imports: [
     BrowserModule,
     NgbModule,
+    FormsModule,
     ReactiveFormsModule
   ],
   providers: [],

@@ -2,7 +2,7 @@
 // https://karma-runner.github.io/1.0/config/configuration-file.html
 
 module.exports = function (config) {
-  config.set({
+  let configuration = {
     basePath: '',
     frameworks: ['jasmine', '@angular-devkit/build-angular'],
     plugins: [
@@ -32,7 +32,8 @@ module.exports = function (config) {
         flags: ['--no-sandbox']
       }
     },
-    singleRun: false,
     restartOnFileChange: true
-  });
+  };
+
+  config.set(configuration);
 };

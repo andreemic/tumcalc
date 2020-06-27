@@ -10,7 +10,7 @@ describe('workspace-project App', () => {
 
   it('should display welcome message', () => {
     page.navigateTo();
-    expect(page.getTitleText()).toEqual('tumcalc app is running!');
+    expect(page.getTitleText()).toEqual('TUM Rechner');
   });
 
   afterEach(async () => {
