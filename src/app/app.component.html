@@ -1,9 +1,9 @@
 <form [formGroup]="form" class="container">
-  <div class="row h2 justify-content-center mt-4 text-center">
+  <div class="row title justify-content-center mt-4 text-center">
     TUM Eignungsfeststellungsverfahren Rechner</div>
   <div class="row  justify-content-center mb-4 text-center">
-    <p class="col-10 text-muted">
-      Die Technische Universität München benutzt in der ersten Stufe ihres Eignungsfeststellungsverfahrens ein Punktesystem (0-100), in das alle Noten umgewandelt und dann gewichtet werden.
+    <p class="col-md-10 col-sm-12 text-muted">
+    Die Technische Universität München benutzt in der ersten Stufe ihres Eignungsfeststellungsverfahrens ein Punktesystem (0-100), in das alle Noten umgewandelt und dann gewichtet werden. <br>
       Erreicht man in diesem Schritt eine bestimmte Punktzahl ({{ selectedSubject.passingScore }} Punkte für {{ selectedSubject.name }}), muss man nicht in die zweite Stufe. Dieses Tool hilft dir deine Punkte auszurechnen.
     </p>
   </div>
@@ -22,12 +22,12 @@
   </div>
 
   <div class="row justify-content-center">
-    <div class="form-group row align-content-center col-8">
-      <label for="gpa-input" class="col-3 col-form-label">
+    <div class="form-group row align-content-center col-12 col-md-8">
+      <label for="gpa-input" class="col-5 col-md-3 col-form-label">
         Abi durchschnitt* 
       </label>
 
-      <div class="col-7">
+      <div class="col-4 col-md-7">
         <input type="text" formControlName="gpa" class="form-control"
           id="gpa-input" required 
           [class.is-invalid]="form.controls.gpa.invalid 
@@ -39,14 +39,14 @@
           Note mit einer Nachkommastelle z.B. {{ randomGPA }}  
         </small>
       </div>
-      <div [style.display]="gpaPoints ? 'initial' : 'none'" class="col-2 col-form-label">
+      <div [style.display]="gpaPoints ? 'initial' : 'none'" class="col-3 col-md-2 col-form-label">
         <mark placement="top" [ngbTooltip]="this.pointsFormula(gpa, GRADES)">{{ gpaPoints | number }} Punkte</mark>
       </div> 
     </div>
   </div>
 
   <div class="row justify-content-center">
-    <table formGroupName="grades" class="table table-striped col-8">
+    <table formGroupName="grades" class="table table-striped w-100 col-12 col-md-8">
       <thead>
       <tr>
         <th scope="col" class="align-baseline">Fach</th>
@@ -54,7 +54,10 @@
           Beste Note der letzten 4. HJ <br>
           <small class="text-muted">in Notenpunkten</small>
         </th>
-        <th scope="col" class="align-baseline">Gewichtung</th>
+        <th scope="col" class="align-baseline">
+          <span class="d-none-md">Gewicht</span>
+          <span class="d-none d-inline-md">Gewichtung</span>
+        </th>
         <th scope="col" class="align-baseline" placement="top" 
                         ngbTooltip="Note in TUM Punkten mal Gewichtungsfaktor">
           Punkte <br> 
@@ -82,9 +85,7 @@
           </td>
         </tr>
         <tr>
-          <td></td>
-          <td></td>
-          <td class="font-weight-bold">
+          <td colspan="3" class="text-right align-middle font-weight-bold">
             Gewichteter Durchschnitt:
           </td>
           <td>
@@ -100,21 +101,25 @@
       </tbody>
     </table>
   </div>
-  <div *ngIf="form.valid" class="row justify-content-center lead">
-    <span class="p-1">Deine Punkte: 
-      0.65 * <mark>{{ gpaPoints }}</mark> + 0.35 * <mark>{{ weightedSchoolPoints }}</mark>
-      = {{ totalPoints }} Punkte
-    </span>
-  </div>
-  <div *ngIf="form.valid" class="row lead justify-content-center text-center mt-4">
-    <span *ngIf="passingBySubjects" 
-       [class.text-success]="passingByScore"
-       [class.text-danger]="!passingByScore">
-      Mit {{ totalPoints | number }} Punkten erreichst du {{ passing ? '' : 'nicht' }} die nötigen {{ selectedSubject.passingScore | number }} Punkte für die direkte Zulassung.
-    </span>
-    <span *ngIf="!passingBySubjects">
-      Da du keine Note für {{ commaSep(missingClasses) }} eingetragen hast, wirst du an der zweiten Stufe des Eignungsfeststellungsverfahrens teilnehmen müssen.
-    </span>
+  <div *ngIf="form.valid" class="row card m-md-0 m-1 mb-4 ">
+    <div class="card-body">
+      <div class="row justify-content-center lead">
+        <span class="p-1 text-center">Deine Punkte: <br> 
+          0.65 * <mark>{{ gpaPoints }}</mark> + 0.35 * <mark>{{ weightedSchoolPoints }}</mark>
+          = {{ totalPoints }} Punkte
+        </span>
+      </div>
+      <div class="row lead justify-content-center text-center mt-4">
+        <span *ngIf="passingBySubjects" 
+           [class.text-success]="passingByScore"
+           [class.text-danger]="!passingByScore">
+          Mit {{ totalPoints | number }} Punkten erreichst du {{ passing ? '' : 'nicht' }} die nötigen {{ selectedSubject.passingScore | number }} Punkte für die direkte Zulassung.
+        </span>
+        <span *ngIf="!passingBySubjects">
+          Da du keine Note für {{ commaSep(missingClasses) }} eingetragen hast, wirst du an der zweiten Stufe des Eignungsfeststellungsverfahrens teilnehmen müssen.
+        </span>
+      </div>
+    </div>
   </div>
 </form>
 
