@@ -1,13 +1,13 @@
 export interface Class {
   name: string,
-  factor: number,
+  factor?: number,
   critical?: boolean  // true if you can't pass without
 }
 
 export interface Subject {
   name: string,
   classes: Class[],
-  passingScore: number,
+  passingScore?: number,
   src?: string,         // link to page with pdf download
   pdfSrc?: string       // download link for pdf
 };
