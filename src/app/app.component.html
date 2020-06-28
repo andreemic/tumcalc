@@ -3,18 +3,21 @@
     TUM Eignungsfeststellungsverfahren Rechner</div>
   <div class="row  justify-content-center mb-4 text-center">
     <p class="col-md-10 col-sm-12 text-muted">
-    Die Technische Universität München benutzt in der ersten Stufe ihres Eignungsfeststellungsverfahrens ein Punktesystem (0-100), in das alle Noten umgewandelt und dann gewichtet werden. <br>
-      Erreicht man in diesem Schritt eine bestimmte Punktzahl ({{ selectedSubject.passingScore }} Punkte für {{ selectedSubject.name }}), muss man nicht in die zweite Stufe. Dieses Tool hilft dir deine Punkte auszurechnen.
+    Die Technische Universität München benutzt in der ersten Stufe ihres 
+    Eignungsfeststellungsverfahrens ein Punktesystem (0-100),
+    in das alle Noten umgewandelt und dann gewichtet werden. <br>
+    Erreicht man in diesem Schritt eine bestimmte Punktzahl<span *ngIf="!customSubjectSelected"> ({{ selectedSubject.passingScore }} Punkte für {{ selectedSubject.name }})</span>, muss man nicht in die zweite Stufe. Dieses Tool hilft dir deine Punkte auszurechnen.
     </p>
   </div>
   <div class="row align-items-center justify-content-center">
     <div class="form-group subject-input-con">
-      <span class="m-0">Fach: </span>
+      <span class="m-0">Studienfach: </span>
 
       <select formControlName="selectedSubject" class="form-control m-2 subject-input">
         <option *ngFor="let subject of subjects" [ngValue]="subject">
           {{ subject.name }}
         </option>
+        <option>{{ CUSTOM_SUBJ_STR }}</option>
       </select>
       <a *ngIf="selectedSubject?.src" class="small m-1" target="_blank" [href]="selectedSubject?.src">Quelle</a>
       <a *ngIf="selectedSubject?.pdfSrc" class="small m-1" [href]="selectedSubject?.pdfSrc">PDF</a>
@@ -55,8 +58,8 @@
           <small class="text-muted">in Notenpunkten</small>
         </th>
         <th scope="col" class="align-baseline">
-          <span class="d-none-md">Gewicht</span>
-          <span class="d-none d-inline-md">Gewichtung</span>
+          <span class="d-md-none">Gewicht</span>
+          <span class="d-none d-md-inline">Gewichtung</span>
         </th>
         <th scope="col" class="align-baseline" placement="top" 
                         ngbTooltip="Note in TUM Punkten mal Gewichtungsfaktor">
@@ -66,24 +69,37 @@
       </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let class of form.value.selectedSubject.classes; index as i">
-          <td class="align-middle">{{ class.name }}</td>
+        <tr *ngFor="let _class of selectedSubject.classes; index as i"
+          [formGroupName]="classFormGroupName(_class.name, i)">
+          <td class="align-middle">{{ _class.name + (_class.critical ? '*' : '') }}</td>
           <td class="align-middle">
-            <input [formControlName]="classFormGroupName(class.name, i)" 
-              class="form-control col-6 p-2" *ngVar="getGradeControl(class.name, i) as input"
+            <input formControlName="grade" 
+              class="form-control col-6 p-2" *ngVar="getGradeControl(_class.name, i) as input"
               [class.is-invalid]="input?.invalid"
               [class.grade-is-valid]="input?.valid && input.value"
               type="string">
           </td>
-          <td class="align-middle">x{{ class.factor }}</td>
+          <td class="align-middle">
+            <span *ngIf="!customSubjectSelected">x{{ _class.factor }}</span>
+            <span *ngIf="customSubjectSelected">
+              x<input formControlName="factor" class="form-control p-2 col-3 d-inline m-2" type="number">
+            </span>
+          </td>
           <td class="align-middle" >
-            <span *ngIf="getGradeControl(class.name, i)?.valid && classPoints(class.name, i)"
-             [ngbTooltip]="getGradeInput(class.name, i) == null ? undefined :
-              classPointsFormula(getGradeInput(class.name, i), class.factor)">
-              {{ classPoints(class.name, i) | number }}
+            <span *ngIf="getGradeControl(_class.name, i)?.valid && classPoints(_class.name, i)"
+             [ngbTooltip]="getGradeInput(_class.name, i) == null ? undefined :
+              classPointsFormula(getGradeInput(_class.name, i), _class.factor)">
+              {{ classPoints(_class.name, i) | number }}
             </span>
           </td>
         </tr>
+
+        <tr *ngIf="customSubjectSelected" class="add-col" (click)="addCustomClass()">
+          <td colspan="4">
+              <span class="close" style="float:left" aria-hidden="true">+</span>
+          </td>
+        </tr>
+
         <tr>
           <td colspan="3" class="text-right align-middle font-weight-bold">
             Gewichteter Durchschnitt:
@@ -96,7 +112,6 @@
               {{ weightedSchoolPoints }} Punkte
             </mark>
           </td>
-
         </tr>
       </tbody>
     </table>
@@ -105,11 +120,18 @@
     <div class="card-body">
       <div class="row justify-content-center lead">
         <span class="p-1 text-center">Deine Punkte: <br> 
-          0.65 * <mark>{{ gpaPoints }}</mark> + 0.35 * <mark>{{ weightedSchoolPoints }}</mark>
+          <span *ngIf="!customSubjectSelected">{{ this.form.value.gpaWeight }} </span>
+          <input *ngIf="customSubjectSelected" formControlName="gpaWeight"
+           class="d-inline form-control col-1 p-2" type="number">
+          * <mark>{{ gpaPoints }}</mark> + 
+          <span *ngIf="!customSubjectSelected">{{ this.form.value.schoolWeight }} </span>
+          <input *ngIf="customSubjectSelected" formControlName="schoolWeight" 
+           class="d-inline form-control col-1 p-2" type="number">
+          * <mark>{{ weightedSchoolPoints }}</mark>
           = {{ totalPoints }} Punkte
         </span>
       </div>
-      <div class="row lead justify-content-center text-center mt-4">
+      <div *ngIf="selectedSubject.passingScore" class="row lead justify-content-center text-center mt-4">
         <span *ngIf="passingBySubjects" 
            [class.text-success]="passingByScore"
            [class.text-danger]="!passingByScore">

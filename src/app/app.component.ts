@@ -3,7 +3,7 @@ import { FormGroup, FormControl, FormArray, Validators, AbstractControl } from '
 import { FormBuilder } from '@angular/forms';
 import { NgVarDirective } from './ng-var.directive';
 
-import { Subject, subjects } from './subjects';
+import { Class, Subject, subjects } from './subjects';
 
 // Formulas are taken from: https://portal.mytum.de/archiv/kompendium_rechtsangelegenheiten/eignungsfeststellungssatzungen/2010-11-EfV-Satzg-BA-Mathe-FINAL-1-04-10.pdf/download 
 
@@ -36,6 +36,9 @@ export class AppComponent {
 
   GRADE_POINTS = 1;
   GRADES = 2;
+  CUSTOM_SUBJ_STR = "Anderes Studienfach";
+  DEFAULT_GPA_WEIGHT = 0.65;
+  DEFAULT_SCHOOL_WEIGHT = 0.35;
 
   randomGPA = (2.5 + Math.random()).toFixed(1).toString().replace('.',','); 
 
@@ -48,24 +51,61 @@ export class AppComponent {
   closeInfoMsg() {
     this.infoMsgOpen = false;
   }
+
+  resetPointWeights() {
+    this.form.controls.gpaWeight.setValue(this.DEFAULT_GPA_WEIGHT);
+    this.form.controls.schoolWeight.setValue(this.DEFAULT_SCHOOL_WEIGHT);
+  }
   
   /*
    * Called upon change of selectedSubject.
-   * Adds controls (inputs) to form group to match the classes in the subject.
+   * Adds controls to form group to match the classes in the subject.
+   * Note:  since this.form.value hasn't yet been updated, form-dependent 
+   *        getters like this.selectedSubject can't be relied upon.
    */
   onSubjectChange(selectedSubject) {
-    this.form.removeControl('grades');
-
-    // Build new 'grades' FormGroup
-    let builderObject = {};
-
-    // Add correct validator
-    let validator = (this.gradeInputType == this.GRADE_POINTS ? this.gradePointValidator : this.gradeValidator);
-    
-    for (let [i, _class] of selectedSubject.classes.entries()) {
-      builderObject[this.classFormGroupName(_class.name,i)] = [null, validator];
+    let customSubjectSelected = (selectedSubject == this.CUSTOM_SUBJ_STR 
+                                 || selectedSubject.name == this.CUSTOM_SUBJ_STR);
+    if (customSubjectSelected) {
+      selectedSubject = this.customSubject;
+    } else {
+      this.resetPointWeights();
     }
-    this.form.addControl('grades', this.fb.group(builderObject));
+
+    let gradesFormGroup = <FormGroup>this.form.get('grades');
+
+    if (customSubjectSelected) {
+      // Remove unwanted controls (classes not part of selectedSubject)
+      for (let fgName in gradesFormGroup.controls) {
+        let classNotInSubject = selectedSubject.classes.every((c, i) => 
+                                                       this.classFormGroupName(c.name, i) != fgName);
+        if (classNotInSubject) {
+          gradesFormGroup.removeControl(fgName);
+        }
+      }
+    } else {
+      // Remove all controls
+      this.form.removeControl('grades');
+      this.form.addControl('grades', this.fb.group({}));
+    }
+
+    // Add new controls with correct Validator
+    let validator = (this.gradeInputType == this.GRADE_POINTS ? this.gradePointValidator : this.gradeValidator);
+
+    let classBuilderObject = { 
+      'grade': [null, validator],
+      'factor': customSubjectSelected ? [1] : undefined 
+    }; // builder for single class
+
+    for (let [i, _class] of selectedSubject.classes.entries()) {
+      let fgName = this.classFormGroupName(_class.name, i);
+      if (!(fgName in gradesFormGroup.controls)) {
+        let control = this.fb.group(classBuilderObject);
+        gradesFormGroup.addControl(fgName, control);
+      }
+    }
+
+    this.form.setControl('grades', gradesFormGroup);
   }
 
   /*
@@ -156,13 +196,13 @@ export class AppComponent {
   getGradeInput(className: string, classIndex: number) {
     let fgName = this.classFormGroupName(className, classIndex);
     return this.getGradeControl(className, classIndex)?.valid 
-      ? this.form.value.grades[fgName] : null;
+      ? this.form.value.grades[fgName].grade : null;
   }
 
   getGradeControl(className: string, classIndex: number) {
     if (!className) throw Error(`Class name missing`);
     let fgName = this.classFormGroupName(className, classIndex);
-    return this.form.controls.grades.get(fgName);
+    return this.form.controls.grades.get(fgName).get('grade');
   }
 
   /*
@@ -175,16 +215,24 @@ export class AppComponent {
     let _class = this.selectedSubject.classes.find( c => {
       return c.name === className
     });
+    let factor = this.customSubjectSelected ? 
+      this.customClassFactor(className, classIndex) : _class.factor;
+
     if (!gradeInput) {
       return null;
     } else {
       return this.gradePointsToPoints(gradeInput) * 
-        _class.factor;
+        factor;
     }
    }
 
-  classFormGroupName(className: string, index: number) {
-    return `grades-${string_to_slug(className)}-${index}`;
+  customClassFactor(className: string, classIndex: number) {
+    let fgName = this.classFormGroupName(className, classIndex);
+    return this.form.value.grades[fgName].factor;
+  }
+
+  classFormGroupName(className: string, classIndex: number) {
+    return `grades-${string_to_slug(className)}-${classIndex}`;
   }
 
   // Separates given array by commas, adds 'and' before last el.
@@ -205,11 +253,13 @@ export class AppComponent {
     let factorSum = 0; // sum of classes weight factors 
     for (let [i, _class] of this.selectedSubject?.classes.entries()) {
       let classPoints = this.classPoints(_class.name, i);
+      let factor = this.customSubjectSelected ? 
+        this.customClassFactor(_class.name, i) : _class.factor;
 
       if (classPoints) {
         // If input for this class present, add to sum  
         schoolPoints += classPoints;
-        factorSum += _class.factor; 
+        factorSum += factor; 
       }
     }
     return Math.ceil(schoolPoints / factorSum) || 0; 
@@ -222,7 +272,7 @@ export class AppComponent {
   get totalPoints() : number {
     if (this.form.invalid) return null;
 
-    return Math.ceil(0.65 * this.gpaPoints + 0.35 * this.weightedSchoolPoints);
+    return Math.ceil(this.form.value.gpaWeight * this.gpaPoints + this.form.value.schoolWeight * this.weightedSchoolPoints);
   }
 
   get passingByScore(): boolean {
@@ -236,8 +286,32 @@ export class AppComponent {
     return this.passingBySubjects && this.passingByScore;
   }
 
+  // Returns either a custom or a pre-defined subject based on user selection
   get selectedSubject(): Subject {
-    return this.form.value.selectedSubject;
+    let sel = this.form.value.selectedSubject;
+    if (sel == this.CUSTOM_SUBJ_STR) {
+      sel = this.customSubject;
+    }
+    return sel;
+  }
+
+  customClasses: Class[] = [];
+  // Constructs a Subject based on user input
+  get customSubject(): Subject {
+    return {
+       name: this.CUSTOM_SUBJ_STR,
+       classes: this.customClasses
+    };
+  }
+
+  get customSubjectSelected(): boolean {
+    return this.form.value.selectedSubject == this.CUSTOM_SUBJ_STR;
+  }
+
+  addCustomClass() {
+    let classNum = this.customClasses.length + 1;
+    this.customClasses.push({ name: `${classNum}. Fach` });
+    this.onSubjectChange(this.customSubject);
   }
 
   // Returns critical classes for which a grade is missing
@@ -250,10 +324,13 @@ export class AppComponent {
   ngOnInit() {
     this.form = this.fb.group({
       selectedSubject: [subjects[0] || {}],
+      grades: this.fb.group({}),
       gpa: ['', [
         Validators.required,
         this.gradeValidator
-      ]]
+      ]],
+      gpaWeight: [this.DEFAULT_GPA_WEIGHT],
+      schoolWeight: [this.DEFAULT_SCHOOL_WEIGHT]
     });
 
     this.onSubjectChange(this.form.value.selectedSubject);

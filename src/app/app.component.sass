@@ -17,20 +17,24 @@
   text-align: center
   bottom: 20px
 
-table
-  /* Chrome, Safari, Edge, Opera */
-  input::-webkit-outer-spin-button,
-  input::-webkit-inner-spin-button 
-    -webkit-appearance: none
-    margin: 0
-  
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button 
+  -webkit-appearance: none
+  margin: 0
 
-  /* Firefox */
-  input[type=number] 
-    -moz-appearance: textfield
-  
+
+/* Firefox */
+input[type=number] 
+  -moz-appearance: textfield
+table
   .grade-is-valid
     border-color: #28a745 !important
+
+  .add-col:hover
+    cursor: pointer 
+    .close
+      opacity: 0.75
 
 mark
   cursor: pointer
@@ -41,6 +45,7 @@ mark
   padding-top: 2rem
 .title
   font-size: 1.5rem
+
 
 // Medium devices (tablets, 768px and up)
 @media (min-width: 768px) 
