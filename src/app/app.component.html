@@ -3,8 +3,10 @@
     TUM Eignungsfeststellungsverfahren Rechner</div>
   <div class="row  justify-content-center mb-4 text-center">
     <p class="col-md-10 col-sm-12 text-muted">
-    Die Technische Universität München benutzt in der ersten Stufe ihres Eignungsfeststellungsverfahrens ein Punktesystem (0-100), in das alle Noten umgewandelt und dann gewichtet werden. <br>
-      Erreicht man in diesem Schritt eine bestimmte Punktzahl ({{ selectedSubject.passingScore }} Punkte für {{ selectedSubject.name }}), muss man nicht in die zweite Stufe. Dieses Tool hilft dir deine Punkte auszurechnen.
+    Die Technische Universität München benutzt in der ersten Stufe ihres 
+    Eignungsfeststellungsverfahrens ein Punktesystem (0-100),
+    in das alle Noten umgewandelt und dann gewichtet werden. <br>
+    Erreicht man in diesem Schritt eine bestimmte Punktzahl<span *ngIf="!customSubjectSelected"> ({{ selectedSubject.passingScore }} Punkte für {{ selectedSubject.name }})</span>, muss man nicht in die zweite Stufe. Dieses Tool hilft dir deine Punkte auszurechnen.
     </p>
   </div>
   <div class="row align-items-center justify-content-center">
@@ -56,8 +58,8 @@
           <small class="text-muted">in Notenpunkten</small>
         </th>
         <th scope="col" class="align-baseline">
-          <span class="d-none-md">Gewicht</span>
-          <span class="d-none d-inline-md">Gewichtung</span>
+          <span class="d-md-none">Gewicht</span>
+          <span class="d-none d-md-inline">Gewichtung</span>
         </th>
         <th scope="col" class="align-baseline" placement="top" 
                         ngbTooltip="Note in TUM Punkten mal Gewichtungsfaktor">
@@ -67,10 +69,11 @@
       </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let class of selectedSubject.classes; index as i">
+        <tr *ngFor="let class of selectedSubject.classes; index as i"
+          [formGroupName]="classFormGroupName(class.name, i)">
           <td class="align-middle">{{ class.name }}</td>
           <td class="align-middle">
-            <input [formControlName]="classFormGroupName(class.name, i)" 
+            <input formControlName="grade" 
               class="form-control col-6 p-2" *ngVar="getGradeControl(class.name, i) as input"
               [class.is-invalid]="input?.invalid"
               [class.grade-is-valid]="input?.valid && input.value"
@@ -79,7 +82,7 @@
           <td class="align-middle">
             <span *ngIf="!customSubjectSelected">x{{ class.factor }}</span>
             <span *ngIf="customSubjectSelected">
-              x<input class="form-control p-2 col-3 d-inline m-2" type="number">
+              x<input formControlName="factor" class="form-control p-2 col-3 d-inline m-2" type="number">
             </span>
           </td>
           <td class="align-middle" >

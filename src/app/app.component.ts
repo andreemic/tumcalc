@@ -65,9 +65,15 @@ export class AppComponent {
 
     // Add correct validator
     let validator = (this.gradeInputType == this.GRADE_POINTS ? this.gradePointValidator : this.gradeValidator);
+
+    // Builder object from which a single class FormGroup is built
+    let classBuilderObject = { 'grade': [null, validator] };
+    if (this.customSubjectSelected) {
+      classBuilderObject.factor = [1];
+    }
     
     for (let [i, _class] of selectedSubject.classes.entries()) {
-      builderObject[this.classFormGroupName(_class.name,i)] = [null, validator];
+      builderObject[this.classFormGroupName(_class.name, i)] = this.fb.group(classBuilderObject);
     }
     this.form.addControl('grades', this.fb.group(builderObject));
   }
@@ -160,13 +166,13 @@ export class AppComponent {
   getGradeInput(className: string, classIndex: number) {
     let fgName = this.classFormGroupName(className, classIndex);
     return this.getGradeControl(className, classIndex)?.valid 
-      ? this.form.value.grades[fgName] : null;
+      ? this.form.value.grades[fgName].grade : null;
   }
 
   getGradeControl(className: string, classIndex: number) {
     if (!className) throw Error(`Class name missing`);
     let fgName = this.classFormGroupName(className, classIndex);
-    return this.form.controls.grades.get(fgName);
+    return this.form.controls.grades.get(fgName).get('grade');
   }
 
   /*
@@ -179,16 +185,24 @@ export class AppComponent {
     let _class = this.selectedSubject.classes.find( c => {
       return c.name === className
     });
+    let factor = this.customSubjectSelected ? 
+      this.customClassFactor(className, classIndex) : _class.factor;
+
     if (!gradeInput) {
       return null;
     } else {
       return this.gradePointsToPoints(gradeInput) * 
-        _class.factor;
+        factor;
     }
    }
 
-  classFormGroupName(className: string, index: number) {
-    return `grades-${string_to_slug(className)}-${index}`;
+  customClassFactor(className: string, classIndex: number) {
+    let fgName = this.classFormGroupName(className, classIndex);
+    return this.form.value.grades[fgName].factor;
+  }
+
+  classFormGroupName(className: string, classIndex: number) {
+    return `grades-${string_to_slug(className)}-${classIndex}`;
   }
 
   // Separates given array by commas, adds 'and' before last el.
@@ -209,11 +223,13 @@ export class AppComponent {
     let factorSum = 0; // sum of classes weight factors 
     for (let [i, _class] of this.selectedSubject?.classes.entries()) {
       let classPoints = this.classPoints(_class.name, i);
+      let factor = this.customSubjectSelected ? 
+        this.customClassFactor(_class.name, i) : _class.factor;
 
       if (classPoints) {
         // If input for this class present, add to sum  
         schoolPoints += classPoints;
-        factorSum += _class.factor; 
+        factorSum += factor; 
       }
     }
     return Math.ceil(schoolPoints / factorSum) || 0; 
@@ -264,7 +280,7 @@ export class AppComponent {
 
   addCustomClass() {
     let classNum = this.customClasses.length + 1;
-    this.customClasses.push({ name: `${classNum}. Fach`, factor: 2 });
+    this.customClasses.push({ name: `${classNum}. Fach` });
     this.onSubjectChange(this.customSubject);
   }
 
