@@ -9,12 +9,13 @@
   </div>
   <div class="row align-items-center justify-content-center">
     <div class="form-group subject-input-con">
-      <span class="m-0">Fach: </span>
+      <span class="m-0">Studienfach: </span>
 
       <select formControlName="selectedSubject" class="form-control m-2 subject-input">
         <option *ngFor="let subject of subjects" [ngValue]="subject">
           {{ subject.name }}
         </option>
+        <option>{{ CUSTOM_SUBJ_STR }}</option>
       </select>
       <a *ngIf="selectedSubject?.src" class="small m-1" target="_blank" [href]="selectedSubject?.src">Quelle</a>
       <a *ngIf="selectedSubject?.pdfSrc" class="small m-1" [href]="selectedSubject?.pdfSrc">PDF</a>
@@ -66,7 +67,7 @@
       </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let class of form.value.selectedSubject.classes; index as i">
+        <tr *ngFor="let class of selectedSubject.classes; index as i">
           <td class="align-middle">{{ class.name }}</td>
           <td class="align-middle">
             <input [formControlName]="classFormGroupName(class.name, i)" 
@@ -75,7 +76,12 @@
               [class.grade-is-valid]="input?.valid && input.value"
               type="string">
           </td>
-          <td class="align-middle">x{{ class.factor }}</td>
+          <td class="align-middle">
+            <span *ngIf="!customSubjectSelected">x{{ class.factor }}</span>
+            <span *ngIf="customSubjectSelected">
+              x<input class="form-control p-2 col-3 d-inline m-2" type="number">
+            </span>
+          </td>
           <td class="align-middle" >
             <span *ngIf="getGradeControl(class.name, i)?.valid && classPoints(class.name, i)"
              [ngbTooltip]="getGradeInput(class.name, i) == null ? undefined :
@@ -84,6 +90,13 @@
             </span>
           </td>
         </tr>
+
+        <tr *ngIf="customSubjectSelected" class="add-col" (click)="addCustomClass()">
+          <td colspan="4">
+              <span class="close" style="float:left" aria-hidden="true">+</span>
+          </td>
+        </tr>
+
         <tr>
           <td colspan="3" class="text-right align-middle font-weight-bold">
             Gewichteter Durchschnitt:
@@ -96,12 +109,11 @@
               {{ weightedSchoolPoints }} Punkte
             </mark>
           </td>
-
         </tr>
       </tbody>
     </table>
   </div>
-  <div *ngIf="form.valid" class="row card m-md-0 m-1 mb-4 ">
+  <div *ngIf="form.valid" class="row card m-1 mb-4 ">
     <div class="card-body">
       <div class="row justify-content-center lead">
         <span class="p-1 text-center">Deine Punkte: <br> 
@@ -109,7 +121,7 @@
           = {{ totalPoints }} Punkte
         </span>
       </div>
-      <div class="row lead justify-content-center text-center mt-4">
+      <div *ngIf="selectedSubject.passingScore" class="row lead justify-content-center text-center mt-4">
         <span *ngIf="passingBySubjects" 
            [class.text-success]="passingByScore"
            [class.text-danger]="!passingByScore">

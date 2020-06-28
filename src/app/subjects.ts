@@ -1,10 +1,12 @@
+export interface Class {
+  name: string,
+  factor: number,
+  critical?: boolean  // true if you can't pass without
+}
+
 export interface Subject {
   name: string,
-  classes: {
-    name: string,
-    factor: number,
-    critical?: boolean  // true if you can't pass without
-  }[],
+  classes: Class[],
   passingScore: number,
   src?: string,         // link to page with pdf download
   pdfSrc?: string       // download link for pdf

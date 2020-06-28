@@ -36,6 +36,7 @@ export class AppComponent {
 
   GRADE_POINTS = 1;
   GRADES = 2;
+  CUSTOM_SUBJ_STR = "Anderes Studienfach";
 
   randomGPA = (2.5 + Math.random()).toFixed(1).toString().replace('.',','); 
 
@@ -51,9 +52,12 @@ export class AppComponent {
   
   /*
    * Called upon change of selectedSubject.
-   * Adds controls (inputs) to form group to match the classes in the subject.
+   * Adds controls to form group to match the classes in the subject.
    */
   onSubjectChange(selectedSubject) {
+    if (selectedSubject == this.CUSTOM_SUBJ_STR) {
+      selectedSubject = this.customSubject;
+    }
     this.form.removeControl('grades');
 
     // Build new 'grades' FormGroup
@@ -236,8 +240,32 @@ export class AppComponent {
     return this.passingBySubjects && this.passingByScore;
   }
 
+  // Returns either a custom or a pre-defined subject based on user selection
   get selectedSubject(): Subject {
-    return this.form.value.selectedSubject;
+    let sel = this.form.value.selectedSubject;
+    if (sel == this.CUSTOM_SUBJ_STR) {
+      sel = this.customSubject;
+    }
+    return sel;
+  }
+
+  customClasses: Class[] = [];
+  // Constructs a Subject based on user input
+  get customSubject(): Subject {
+    return {
+       name: this.CUSTOM_SUBJ_STR,
+       classes: this.customClasses
+    };
+  }
+
+  get customSubjectSelected(): boolean {
+    return this.form.value.selectedSubject == this.CUSTOM_SUBJ_STR;
+  }
+
+  addCustomClass() {
+    let classNum = this.customClasses.length + 1;
+    this.customClasses.push({ name: `${classNum}. Fach`, factor: 2 });
+    this.onSubjectChange(this.customSubject);
   }
 
   // Returns critical classes for which a grade is missing
